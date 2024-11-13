@@ -8,7 +8,7 @@
 ```bash 
 git clone https://github.com/jashjasani/ai-inventory.git
 cd ai-inventory
-conda create -p ./venv python=3.10 && conda activate ./venv
+conda create -p ./venv python=3.10.0 && conda activate ./venv
 pip install -r requirements.txt
 ```
 
