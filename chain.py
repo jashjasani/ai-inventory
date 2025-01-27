@@ -13,7 +13,7 @@ def get_json_inventory(image_base64 : bytes, original_format: str):
     response = client.chat.completions.create(
     temperature=config.TEMPERATURE,
     response_format={ "type": "json_object" },
-    model = "accounts/fireworks/models/llama-v3p2-90b-vision-instruct",
+    model = "accounts/fireworks/models/qwen2-vl-72b-instruct",
     messages = [{
         "role": "user",
         "content": [{
