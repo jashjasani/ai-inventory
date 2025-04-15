@@ -8,13 +8,26 @@ import json
 from dotenv import load_dotenv
 from utils import resize_image
 import traceback
+from fastapi.middleware.cors import CORSMiddleware
+import os 
 
 load_dotenv()
 
+origins_env = os.getenv("ORIGINS")
+if not origins_env:
+    raise ValueError("ORIGINS environment variable is not set. Please set it in your .env file.")
+
+origins = [a.strip() for a in origins_env.split(",")]
 
 app = FastAPI()
 
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/scan")
 async def scan_image(file: UploadFile = File(...)):

@@ -18,5 +18,13 @@ Inside ai-inventory directory
 fastapi dev app.py
 ```
 
+
+# Start server production
+Inside ai-inventory directory
+```bash 
+fastapi run
+```
+
+
 This will start a server on http://127.0.0.1:8000 <br>
 You can access the API documentation at http://127.0.0.1:8000/docs to learn how to use it.
