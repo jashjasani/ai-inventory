@@ -57,7 +57,7 @@ async def scan_image(file: UploadFile = File(...)):
         return JSONResponse(
             content={
                 "data": inventory_data,
-                "status" : len(inventory_data["items"]) > 0,
+                "status" : len(inventory_data["items"]) > 0 and 1 or 0,
                 "message": len(inventory_data["items"]) > 0 and "Image processed and analyzed successfully" or "No items found in the image",
             },
             status_code=200
