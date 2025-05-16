@@ -1,7 +1,13 @@
 from PIL import Image
 import io 
 import imghdr
+from pymongo import MongoClient
+import os 
+from dotenv import load_dotenv
+from functools import lru_cache
 
+
+load_dotenv()
 
 def get_image_format(image_data: bytes) -> str:
     """
@@ -52,7 +58,6 @@ async def resize_image(image_data: bytes) -> tuple[bytes, str]:
     try:
         # Detect original format
         original_format = get_image_format(image_data)
-        
         # Open image from bytes
         img = Image.open(io.BytesIO(image_data))
         
@@ -80,3 +85,33 @@ async def resize_image(image_data: bytes) -> tuple[bytes, str]:
     
     except Exception as e:
         raise ValueError(f"Error processing image: {str(e)}")
+
+
+@lru_cache(maxsize=1)
+def get_db_connection():
+    """Create and cache a MongoDB connection."""
+    user = os.environ["DB_USER"]
+    password = os.environ["DB_PASSWORD"] 
+    host = os.environ["DB_HOST"]
+    uri = f"mongodb://{user}:{password}@{host}/inventoryService"
+    return MongoClient(uri, maxPoolSize=50)
+
+def get_db_client(collection_name: str):
+    """Get a collection from the cached connection."""
+    client = get_db_connection()
+    db = client.get_database("inventoryService")
+    return db.get_collection(collection_name)
+
+def get_items_for_company(company_id: str):
+    """Get items for a company with pagination."""
+    
+    db = get_db_client("items")
+
+    cursor = db.find(
+        {"X-MOVER-COMPANY-ID": company_id}, 
+        {"name": 1, "_id": 0, "volume" : 1, "weight" : 1, "rooms" : 1, "isCarton" : 1, "isCp": 1, "isPbo": 1}
+    )
+    cursor_data = list(cursor)  # Get all documents in one pass
+    items_list = [f"{i}. {doc['name']}" for i, doc in enumerate(cursor_data)]
+    items_dict = {doc['name']: doc for doc in cursor_data}
+    return items_list, items_dict
