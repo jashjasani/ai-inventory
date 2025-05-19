@@ -39,8 +39,6 @@ def get_json_inventory(image_base64 : bytes, original_format: str, company_id:in
     else:
         inventory_data = inventory_json
 
-    print(inventory_data)
-
     for item in inventory_data["items"]:
         if item["inDb"]:
             name = item["name"]
