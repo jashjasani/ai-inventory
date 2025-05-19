@@ -94,7 +94,7 @@ def get_db_connection():
     password = os.environ["DB_PASSWORD"] 
     host = os.environ["DB_HOST"]
     uri = f"mongodb://{user}:{password}@{host}/inventoryService"
-    return MongoClient(uri, maxPoolSize=50)
+    return MongoClient(uri, maxPoolSize=1, connect=True)
 
 def get_db_client(collection_name: str):
     """Get a collection from the cached connection."""
