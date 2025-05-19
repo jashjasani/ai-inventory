@@ -6,7 +6,7 @@ from utils import get_items_for_company
 import json
 import time
 
-def get_json_inventory(image_base64 : bytes, original_format: str, company_id:str):
+def get_json_inventory(image_base64 : bytes, original_format: str, company_id:int):
 
     client = openai.OpenAI(
     base_url = "https://openrouter.ai/api/v1",
