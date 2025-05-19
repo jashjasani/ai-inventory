@@ -30,7 +30,7 @@ app.add_middleware(
 )
 
 @app.post("/scan")
-async def scan_image(company_id:str, file: UploadFile = File(...)):
+async def scan_image(company_id:int, file: UploadFile = File(...)):
     try:
         # Read the file content
         contents = await file.read()

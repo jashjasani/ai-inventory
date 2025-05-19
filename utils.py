@@ -102,13 +102,13 @@ def get_db_client(collection_name: str):
     db = client.get_database("inventoryService")
     return db.get_collection(collection_name)
 
-def get_items_for_company(company_id: str):
+def get_items_for_company(company_id: int):
     """Get items for a company with pagination."""
     
     db = get_db_client("items")
 
     cursor = db.find(
-        {"X-MOVER-COMPANY-ID": company_id}, 
+        {"companyId": company_id}, 
         {"name": 1, "_id": 0, "volume" : 1, "weight" : 1, "rooms" : 1, "isCarton" : 1, "isCp": 1, "isPbo": 1}
     )
     cursor_data = list(cursor)  # Get all documents in one pass
