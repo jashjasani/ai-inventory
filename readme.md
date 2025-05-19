@@ -1,7 +1,7 @@
 # Dependencies 
 
 - [Miniconda](https://docs.anaconda.com/miniconda/miniconda-install/)
-- Get a fireworks API key and add it to .env file as shown in .env.example  [Fireworks](https://fireworks.ai/account/)
+- Get a openrourter API key 
 
 # Installation 
 
