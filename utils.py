@@ -103,11 +103,13 @@ def initialize_mongo_client():
         # Set waitQueueTimeoutMS and connectTimeoutMS to avoid long hanging connections
         _mongo_client = MongoClient(
             uri,
-            maxPoolSize=10,      # Limit pool size to prevent thread explosion
-            minPoolSize=1,       # Keep at least one connection alive
-            waitQueueTimeoutMS=2500,  # Don't wait too long for a connection
-            connectTimeoutMS=5000,    # Don't hang if MongoDB is unavailable
-            retryWrites=True     # Automatically retry operations
+            maxPoolSize=1,  # Limit to just one connection
+            minPoolSize=0,  # Don't keep any connections open when not in use
+            connect=False,  # Don't connect immediately (connect on first operation)
+            socketTimeoutMS=None,  # Don't timeout sockets
+            serverSelectionTimeoutMS=30000,  # Allow more time for server selection
+            directConnection=True,  # Use a direct connection to avoid extra threads
+            retryWrites=False  
         )
         
         # Test connection immediately to fail fast during startup
