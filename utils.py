@@ -140,7 +140,7 @@ def get_items_for_company(company_id: int):
 
     cursor = db.find(
         {"companyId": company_id}, 
-        {"name": 1, "_id": 0, "volume": 1, "weight": 1, "rooms": 1, "isCarton": 1, "isCp": 1, "isPbo": 1}
+        {"name": 1, "_id": 1, "volume": 1, "weight": 1, "rooms": 1, "isCarton": 1, "isCp": 1, "isPbo": 1}
     )
     
     cursor_data = list(cursor)  # Get all documents in one pass

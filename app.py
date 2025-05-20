@@ -47,19 +47,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Startup event to initialize MongoDB client
-@app.on_event("startup")
-async def startup_event():
-    logger.info("Application starting up, initializing MongoDB connection...")
-    initialize_mongo_client()
-    logger.info("MongoDB connection initialized successfully")
-
-# Shutdown event to close MongoDB client
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("Application shutting down, closing MongoDB connection...")
-    close_mongo_client()
-    logger.info("MongoDB connection closed successfully")
 
 @app.post("/scan")
 async def scan_image(company_id: int, file: UploadFile = File(...)):
@@ -85,6 +72,7 @@ async def scan_image(company_id: int, file: UploadFile = File(...)):
         return JSONResponse(
             content={
                 "items": inventory_data["items"],
+                "room_name" : inventory_data["room_name"],
                 "status": 1 if item_count > 0 else 0,
                 "message": "Image processed and analyzed successfully" if item_count > 0 else "No items found in the image",
             },

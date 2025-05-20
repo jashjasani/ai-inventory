@@ -5,6 +5,7 @@ import config
 from utils import get_items_for_company
 import json
 import time
+import random
 
 def get_json_inventory(image_base64 : bytes, original_format: str, company_id:int):
 
@@ -45,11 +46,12 @@ def get_json_inventory(image_base64 : bytes, original_format: str, company_id:in
             item_in_db : dict = items_dict[name]
             for key, value in item_in_db.items():
                 if key not in item:
+                    if key == "_id":
+                        value = str(value)
                     item[key] = value
 
         else:
-            item["weight"]=None
-            item["volume"]=None
+            item["_id"] = random.randint(0, len(inventory_data["items"]))
             item["rooms"]=[]
             item["isCp"]=None
             item["isPbo"]=None
