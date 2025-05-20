@@ -5,9 +5,12 @@ from pymongo import MongoClient
 import os 
 from dotenv import load_dotenv
 from functools import lru_cache
-
+import atexit
 
 load_dotenv()
+
+# Global MongoDB client variable
+_mongo_client = None
 
 def get_image_format(image_data: bytes) -> str:
     """
@@ -44,7 +47,7 @@ def convert_to_supported_format(img: Image.Image, original_format: str) -> bytes
                 img.save(img_byte_arr, format='JPEG', quality=95, optimize=True)
         else:
             img.save(img_byte_arr, format='JPEG', quality=95, optimize=True)
-    except Exception as e:
+    except Exception:
         # Fallback to JPEG if there's any error
         img.save(img_byte_arr, format='JPEG', quality=95, optimize=True)
     
@@ -86,32 +89,60 @@ async def resize_image(image_data: bytes) -> tuple[bytes, str]:
     except Exception as e:
         raise ValueError(f"Error processing image: {str(e)}")
 
+def initialize_mongo_client():
+    """Initialize the MongoDB client once at application startup."""
+    global _mongo_client
+    
+    if _mongo_client is None:
+        user = os.environ["DB_USER"]
+        password = os.environ["DB_PASSWORD"] 
+        host = os.environ["DB_HOST"]
+        uri = f"mongodb://{user}:{password}@{host}/inventoryService"
+        
+        # Configure client with appropriate pooling settings
+        # Set waitQueueTimeoutMS and connectTimeoutMS to avoid long hanging connections
+        _mongo_client = MongoClient(
+            uri,
+            maxPoolSize=10,      # Limit pool size to prevent thread explosion
+            minPoolSize=1,       # Keep at least one connection alive
+            waitQueueTimeoutMS=2500,  # Don't wait too long for a connection
+            connectTimeoutMS=5000,    # Don't hang if MongoDB is unavailable
+            retryWrites=True     # Automatically retry operations
+        )
+        
+        # Test connection immediately to fail fast during startup
+        _mongo_client.admin.command('ping')
+        
+        # Register client to be closed when application shuts down
+        atexit.register(close_mongo_client)
+    
+    return _mongo_client
 
-@lru_cache(maxsize=1)
-def get_db_connection():
-    """Create and cache a MongoDB connection."""
-    user = os.environ["DB_USER"]
-    password = os.environ["DB_PASSWORD"] 
-    host = os.environ["DB_HOST"]
-    uri = f"mongodb://{user}:{password}@{host}/inventoryService"
-    return MongoClient(uri, maxPoolSize=1, connect=True)
+def close_mongo_client():
+    """Close the MongoDB client during application shutdown."""
+    global _mongo_client
+    if _mongo_client is not None:
+        _mongo_client.close()
+        _mongo_client = None
 
 def get_db_client(collection_name: str):
-    """Get a collection from the cached connection."""
-    client = get_db_connection()
+    """Get a collection from the MongoDB client."""
+    client = initialize_mongo_client()
     db = client.get_database("inventoryService")
     return db.get_collection(collection_name)
 
 def get_items_for_company(company_id: int):
-    """Get items for a company with pagination."""
+    """Get items for a company."""
     
     db = get_db_client("items")
 
     cursor = db.find(
         {"companyId": company_id}, 
-        {"name": 1, "_id": 0, "volume" : 1, "weight" : 1, "rooms" : 1, "isCarton" : 1, "isCp": 1, "isPbo": 1}
+        {"name": 1, "_id": 0, "volume": 1, "weight": 1, "rooms": 1, "isCarton": 1, "isCp": 1, "isPbo": 1}
     )
+    
     cursor_data = list(cursor)  # Get all documents in one pass
     items_list = [f"{i}. {doc['name']}" for i, doc in enumerate(cursor_data)]
     items_dict = {doc['name']: doc for doc in cursor_data}
+    
     return items_list, items_dict
