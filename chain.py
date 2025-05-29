@@ -52,6 +52,8 @@ def get_json_inventory(image_base64 : bytes, original_format: str, company_id:in
                             if key == "_id":
                                 value = str(value)
                             item[key] = value
+                        item["volume"] = item_in_db["volume"]
+                        item["weight"] = item_in_db["weight"]
                 else:
                     item["_id"] = random.randint(0, len(inventory_data["items"]))
                     item["rooms"]=[]
